@@ -9,20 +9,24 @@ from smalldiff.encoder import ModelEncoder
 class SmallDiff:
 
     @classmethod
-    def is_equal(cls, expected: Any, actual: Any) -> bool:
+    def is_equal(cls, expected: Any, actual: Any,
+                 encoder: Type[ModelEncoder] = None) -> bool:
         """
-        returns True if the difference is None
+        returns True if the difference is None,
+        can be used for Testing object equality
         """
-        return not cls.compare(expected, actual, print_diff=True)
+        return not cls.compare(expected, actual, print_diff=True, encoder=encoder)
 
     @classmethod
-    def compare(cls, expected: Any, actual: Any, print_diff: bool = False) -> dict:
+    def compare(cls, expected: Any, actual: Any,
+                print_diff: bool = False,
+                encoder: Type[ModelEncoder] = None) -> dict:
         """
         Takes to objects and converts into a dictionary.
         Then check the equality between dictionaries
         """
-        expected_dict: dict = cls.__to_dict(expected)
-        actual_dict: dict = cls.__to_dict(actual)
+        expected_dict: dict = cls.__to_dict(expected, encoder)
+        actual_dict: dict = cls.__to_dict(actual, encoder)
 
         if expected_dict == actual_dict:
             return {}
@@ -33,7 +37,8 @@ class SmallDiff:
             return diff
 
     @classmethod
-    def __to_dict(cls, schema: Any, encoder: Type[ModelEncoder] = None) -> dict:
+    def __to_dict(cls, schema: Any,
+                  encoder: Type[ModelEncoder] = None) -> dict:
         if encoder:
             return json.loads(json.dumps(schema, cls=encoder, indent=4))
         if isinstance(schema, BaseModel):
