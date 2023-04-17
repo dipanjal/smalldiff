@@ -64,6 +64,11 @@ class SmallDiff:
                 if nested_diff:
                     diff.update(nested_diff)
 
+            elif isinstance(val, list) and key in actual and isinstance(actual[key], list):
+                list_diff = cls.__list_diff(expected=val, actual=actual[key], path=f"{path}.{key}" if path else key)
+                if list_diff:
+                    diff.update(list_diff)
+
             # Check if the key is not present in the actual dictionary
             # If true, add the key and its expected value to the diff dictionary
             elif key not in actual:
@@ -79,6 +84,34 @@ class SmallDiff:
         for key, val in actual.items():
             if key not in expected:
                 diff[f"{path}.{key}" if path else key] = {"expected": None, "actual": val}
+
+        return diff
+
+    @classmethod
+    def __list_diff(cls, expected: list, actual: list, path="") -> dict:
+        """
+        Compares two lists and returns a dictionary of their differences.
+        """
+        diff = {}
+        for i, (expected_val, actual_val) in enumerate(zip(expected, actual)):
+            # Check if the expected value in the list is a dictionary and if it exists in the actual list
+            # If both conditions are true, recursively call the dict_diff function with the nested dictionary
+            # and update the diff dictionary with the returned values
+            if isinstance(expected_val, dict) and isinstance(actual_val, dict):
+                nested_diff = cls.__dict_diff(expected=expected_val, actual=actual_val,
+                                              path=f"{path}.{i}" if path else i)
+                if nested_diff:
+                    diff.update(nested_diff)
+
+            # Check if the expected value in the list does not match the actual value in the list
+            elif expected_val != actual_val:
+                diff[f"{path}.{i}" if path else i] = {"expected": expected_val, "actual": actual_val}
+
+            # Check if the actual list has more elements than the expected list
+            # If true, add the extra elements to the diff dictionary
+            if len(actual) > len(expected):
+                for j in range(len(expected), len(actual)):
+                    diff[f"{path}.{j}" if path else j] = {"expected": None, "actual": actual[j]}
 
         return diff
 
