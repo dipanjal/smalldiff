@@ -86,3 +86,5 @@ print(diff)
     }
 }
 ```
+We can also use it to assert test cases. See an example bellow
+https://github.com/dipanjal/smalldiff/blob/b9fff41b95d102fb610a2b732287220dac83fd37/tests/test_smalldiff.py#L13-L33
