@@ -1,7 +1,7 @@
 import unittest
 from typing import List
 
-from schema import LocationModel
+from schema import LocationModel, Gender
 from smalldiff import SmallDiff
 from tests.schema import PersonModel, AddressModel
 
@@ -13,6 +13,7 @@ class TestSmallDiff(unittest.TestCase):
         person1 = PersonModel(
             name="John Doe",
             age=28,
+            gender=Gender.M,
             address=AddressModel(
                 street="123 Main St.",
                 dist="Dhaka",
@@ -22,6 +23,7 @@ class TestSmallDiff(unittest.TestCase):
         person2 = PersonModel(
             name="John Doe",
             age=28,
+            gender=Gender.M,
             address=AddressModel(
                 street="123 Main St.",
                 dist="Dhaka",
@@ -35,6 +37,7 @@ class TestSmallDiff(unittest.TestCase):
         person1 = PersonModel(
             name="John Doe",
             age=28,
+            gender=Gender.M,
             address=AddressModel(
                 street="123 Main St.",
                 dist="Dhaka",
@@ -53,6 +56,7 @@ class TestSmallDiff(unittest.TestCase):
         person2 = PersonModel(
             name="John Doe",
             age=27,
+            gender=Gender.M,
             address=AddressModel(
                 street="123 Main St.",
                 dist="Magura",
@@ -69,7 +73,59 @@ class TestSmallDiff(unittest.TestCase):
             ]
         )
         assert not SmallDiff.is_equal(person1, person2)
-        # self.assertEqual(person1, person2)
+
+    def test_dict_contains_list_not_equal(self):
+        data_expected: dict[str, List[PersonModel]] = {
+            "1227": [
+                PersonModel(
+                    name="John Doe",
+                    age=28,
+                    gender=Gender.M,
+                    address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1227)
+                ),
+                PersonModel(
+                    name="Rob Chapman",
+                    age=28,
+                    gender=Gender.M,
+                    address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1227)
+                )
+            ],
+            "1229": [
+                PersonModel(
+                    name="Eric Clapton",
+                    age=28,
+                    gender=Gender.M,
+                    address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1229)
+                )
+            ]
+        }
+
+        data_actual: dict[str, List[PersonModel]] = {
+            "1227": [
+                PersonModel(
+                    name="John Doe",
+                    age=28,
+                    gender=Gender.M,
+                    address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1227)
+                ),
+                PersonModel(
+                    name="Rob Chapman",
+                    age=28,
+                    gender=Gender.M,
+                    address=AddressModel(street="ABC Main St.", dist="Dhaka", zip=1227)
+                )
+            ],
+            "1229": [
+                PersonModel(
+                    name="Eric Clapton",
+                    age=35,
+                    gender=Gender.M,
+                    address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1229)
+                )
+            ]
+        }
+
+        assert not SmallDiff.is_equal(data_expected, data_actual)
 
 
 if __name__ == '__main__':

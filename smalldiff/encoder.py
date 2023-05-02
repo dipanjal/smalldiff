@@ -3,10 +3,14 @@ from datetime import datetime, date
 from enum import Enum
 from json import JSONEncoder
 
+from pydantic import BaseModel
+
 
 class ModelEncoder(JSONEncoder):
     def default(self, obj):
         try:
+            if isinstance(obj, BaseModel):
+                return obj.json()
             if isinstance(obj, Enum):
                 return obj.value
             if isinstance(obj, (date, datetime)):
