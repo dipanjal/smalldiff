@@ -1,5 +1,7 @@
 import json
-from typing import Any, Type
+from typing import Any, Type, Union, Dict
+
+from pydantic.main import BaseModel
 
 from smalldiff.encoder import ModelEncoder
 
@@ -7,8 +9,12 @@ from smalldiff.encoder import ModelEncoder
 class SmallDiff:
 
     @classmethod
-    def is_equal(cls, expected: Any, actual: Any,
-                 encoder: Type[ModelEncoder] = None) -> bool:
+    def is_equal(
+            cls,
+            expected: Any,
+            actual: Any,
+            encoder: Type[ModelEncoder] = None
+    ) -> bool:
         """
         returns True if the difference is None,
         can be used for Testing object equality
@@ -16,9 +22,13 @@ class SmallDiff:
         return not cls.compare(expected, actual, print_diff=True, encoder=encoder)
 
     @classmethod
-    def compare(cls, expected: Any, actual: Any,
-                print_diff: bool = False,
-                encoder: Type[ModelEncoder] = None) -> dict:
+    def compare(
+            cls,
+            expected: Union[Type, Dict],
+            actual: Union[Type, Dict],
+            print_diff: bool = False,
+            encoder: Type[ModelEncoder] = None
+    ) -> dict:
         """
         Takes to objects and converts into a dictionary.
         Then check the equality between dictionaries
@@ -40,6 +50,8 @@ class SmallDiff:
                   encoder: Type[ModelEncoder] = None) -> dict:
         if encoder:
             return json.loads(json.dumps(schema, cls=encoder, indent=4))
+        if isinstance(schema, BaseModel):
+            return json.loads(schema.json())
         if isinstance(schema, Exception):
             return vars(schema)
         return json.loads(json.dumps(schema, cls=ModelEncoder, indent=4))

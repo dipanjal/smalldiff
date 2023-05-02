@@ -74,7 +74,10 @@ class TestSmallDiff(unittest.TestCase):
         )
         assert not SmallDiff.is_equal(person1, person2)
 
-    def test_dict_contains_list_not_equal(self):
+    def test_persons_group_by_zip(self):
+        """
+        Test case for group contents are not equal
+        """
         data_expected: dict[str, List[PersonModel]] = {
             "1227": [
                 PersonModel(
@@ -119,6 +122,70 @@ class TestSmallDiff(unittest.TestCase):
                 PersonModel(
                     name="Eric Clapton",
                     age=35,
+                    gender=Gender.M,
+                    address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1229)
+                )
+            ]
+        }
+
+        assert not SmallDiff.is_equal(data_expected, data_actual)
+
+    def test_group_by_zip_dict_length_unequal(self):
+        """
+        Test case for group dictionary length unequal
+        """
+        data_expected: dict[str, List[PersonModel]] = {
+            "1227": [
+                PersonModel(
+                    name="John Doe",
+                    age=28,
+                    gender=Gender.M,
+                    address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1227)
+                ),
+                PersonModel(
+                    name="Rob Chapman",
+                    age=28,
+                    gender=Gender.M,
+                    address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1227)
+                )
+            ],
+            "1229": [
+                PersonModel(
+                    name="Eric Clapton",
+                    age=28,
+                    gender=Gender.M,
+                    address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1229)
+                )
+            ],
+            "1230": [
+                PersonModel(
+                    name="Eric Clapton",
+                    age=28,
+                    gender=Gender.M,
+                    address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1230)
+                )
+            ]
+        }
+
+        data_actual: dict[str, List[PersonModel]] = {
+            "1227": [
+                PersonModel(
+                    name="John Doe",
+                    age=28,
+                    gender=Gender.M,
+                    address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1227)
+                ),
+                PersonModel(
+                    name="Rob Chapman",
+                    age=28,
+                    gender=Gender.M,
+                    address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1227)
+                )
+            ],
+            "1229": [
+                PersonModel(
+                    name="Eric Clapton",
+                    age=28,
                     gender=Gender.M,
                     address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1229)
                 )
