@@ -116,13 +116,24 @@ class SmallDiff:
             elif expected_val != actual_val:
                 diff[f"{path}.{i}" if path else i] = {"expected": expected_val, "actual": actual_val}
 
-        # Check if the actual list has more elements than the expected list
-        # If true, add the extra elements to the diff dictionary
+        # Check list items inequality
+        cls.__compare_remaining_list_items(expected, actual, diff, path)
+
+        return diff
+
+    @classmethod
+    def __compare_remaining_list_items(cls, expected: list, actual: list, diff: dict, path: str):
+
+        # Check if actual has more items than expected
         if len(actual) > len(expected):
             for j in range(len(expected), len(actual)):
                 diff[f"{path}.{j}" if path else j] = {"expected": None, "actual": actual[j]}
 
-        return diff
+        # Check if expected has more items than actual
+        if len(expected) > len(actual):
+            for j in range(len(actual), len(expected)):
+                diff[f"{path}.{j}" if path else j] = {"expected": expected[j], "actual": None}
+
 
     @classmethod
     def __print_diff(cls, diff: dict):
