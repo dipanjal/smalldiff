@@ -44,11 +44,12 @@ This will create a new virtual environment and install the dependencies listed i
 
 To use this library, you can import the `compare` function from the `smalldiff.SmallDiff` module:
 
+Example 1: Comparing two dictionaries with nested items
 ```python
 from smalldiff import SmallDiff
 
 # the data we expect
-dict1 = {
+expected = {
     "name": "John Doe",
     "age": 28,
     "address": {
@@ -59,7 +60,7 @@ dict1 = {
 }
 
 # the actual data we get maybe after an API call
-dict2 = {
+actual = {
     "name": "John Doe",
     "age": 28,
     "address": {
@@ -68,11 +69,11 @@ dict2 = {
         "zip": 7600
     }
 }
-diff = SmallDiff.compare(dict1, dict2)
+diff = SmallDiff.compare(expected, actual)
 print(diff)
 ```
 
-This will output:
+`output`
 ```json
 {
     "address.dist": {
