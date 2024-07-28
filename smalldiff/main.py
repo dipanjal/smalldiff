@@ -1,5 +1,5 @@
 import json
-from typing import Any, Type, Union, Dict
+from typing import Any, Type, Union, Dict, List
 
 from pydantic.main import BaseModel
 
@@ -33,16 +33,44 @@ class SmallDiff:
         Takes to objects and converts into a dictionary.
         Then check the equality between dictionaries
         """
+        if type(expected) != type(actual):
+            raise TypeError("expected and actual data types must be same")
+        if expected == actual:
+            return {}
+
+        if isinstance(expected, list) and isinstance(actual, list):
+            diff: dict = cls.__compare_list(expected, actual, encoder)
+        else:
+            diff: dict = cls.__compare_dict(expected, actual, encoder)
+
+        if print_diff:
+            cls.__print_diff(diff)
+        return diff
+
+    @classmethod
+    def __compare_list(
+            cls,
+            expected_list: Union[Type, List],
+            actual_list: Union[Type, List],
+            encoder: Type[ModelEncoder] = None
+    ) -> dict:
+        if len(expected_list) != len(actual_list):
+            raise ValueError("unable to compare lists with unequal size")
+        diffs = {}
+        for i, (expected, actual) in enumerate(zip(expected_list, actual_list)):
+            diffs[i] = cls.__compare_dict(expected, actual, encoder)
+        return diffs
+
+    @classmethod
+    def __compare_dict(
+            cls,
+            expected: Union[Type, Any],
+            actual: Union[Type, Any],
+            encoder: Type[ModelEncoder] = None
+    ) -> dict:
         expected_dict: dict = cls.__to_dict(expected, encoder)
         actual_dict: dict = cls.__to_dict(actual, encoder)
-
-        if expected_dict == actual_dict:
-            return {}
-        else:
-            diff: dict = cls.__dict_diff(expected_dict, actual_dict)
-            if print_diff:
-                cls.__print_diff(diff)
-            return diff
+        return cls.__dict_diff(expected_dict, actual_dict)
 
     @classmethod
     def __to_dict(cls,
@@ -133,7 +161,6 @@ class SmallDiff:
         if len(expected) > len(actual):
             for j in range(len(actual), len(expected)):
                 diff[f"{path}.{j}" if path else j] = {"expected": expected[j], "actual": None}
-
 
     @classmethod
     def __print_diff(cls, diff: dict):

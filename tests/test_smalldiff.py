@@ -245,6 +245,39 @@ class TestSmallDiff(unittest.TestCase):
 
         assert not SmallDiff.is_equal(data_expected, data_actual)
 
+    def test_unequal_list(self):
+        person_list_1 = [
+            PersonModel(
+                name="John Doe",
+                age=25,
+                gender=Gender.M,
+                address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1227)
+            ),
+            PersonModel(
+                name="Steve Wilson",
+                age=28,
+                gender=Gender.M,
+                address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1227)
+            )
+        ]
+
+        person_list_2 = [
+            PersonModel(
+                name="John Lark",
+                age=28,
+                gender=Gender.M,
+                address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1227)
+            ),
+            PersonModel(
+                name="Steven Hawkins",
+                age=22,
+                gender=Gender.M,
+                address=AddressModel(street="123 Main St.", dist="Dhaka", zip=1227)
+            ),
+        ]
+
+        assert not SmallDiff.is_equal(person_list_1, person_list_2)
+
 
 if __name__ == '__main__':
     unittest.main()
