@@ -33,19 +33,29 @@ class SmallDiff:
         Takes to objects and converts into a dictionary.
         Then check the equality between dictionaries
         """
-        if type(expected) != type(actual):
-            raise TypeError("expected and actual data types must be same")
         if expected == actual:
             return {}
 
-        if isinstance(expected, list) and isinstance(actual, list):
-            diff: dict = cls.__compare_list(expected, actual, encoder)
-        else:
-            diff: dict = cls.__compare_dict(expected, actual, encoder)
+        cls._validate_types(expected, actual)
+
+        diff = cls._compare_collections(expected, actual, encoder)
 
         if print_diff:
             cls.__print_diff(diff)
+
         return diff
+
+    @classmethod
+    def _validate_types(cls, expected: Any, actual: Any) -> None:
+        if type(expected) != type(actual):
+            raise TypeError("Expected and actual data types must be the same")
+
+    @classmethod
+    def _compare_collections(cls, expected: Union[Type, Dict, List], actual: Union[Type, Dict, List],
+                             encoder: Type[ModelEncoder]) -> dict:
+        if isinstance(expected, list):
+            return cls.__compare_list(expected, actual, encoder)
+        return cls.__compare_dict(expected, actual, encoder)
 
     @classmethod
     def __compare_list(
@@ -56,10 +66,10 @@ class SmallDiff:
     ) -> dict:
         if len(expected_list) != len(actual_list):
             raise ValueError("unable to compare lists with unequal size")
-        diffs = {}
-        for i, (expected, actual) in enumerate(zip(expected_list, actual_list)):
-            diffs[i] = cls.__compare_dict(expected, actual, encoder)
-        return diffs
+        return {
+            i: cls.__compare_dict(expected, actual, encoder)
+            for i, (expected, actual) in enumerate(zip(expected_list, actual_list))
+        }
 
     @classmethod
     def __compare_dict(
@@ -135,8 +145,9 @@ class SmallDiff:
             # If both conditions are true, recursively call the dict_diff function with the nested dictionary
             # and update the diff dictionary with the returned values
             if isinstance(expected_val, dict) and isinstance(actual_val, dict):
-                nested_diff = cls.__dict_diff(expected=expected_val, actual=actual_val,
-                                              path=f"{path}.{i}" if path else i)
+                nested_diff = cls.__dict_diff(
+                    expected=expected_val, actual=actual_val, path=f"{path}.{i}" if path else i
+                )
                 if nested_diff:
                     diff.update(nested_diff)
 
