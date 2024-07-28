@@ -38,7 +38,10 @@ class SmallDiff:
 
         cls._validate_types(expected, actual)
 
-        diff = cls._compare_collections(expected, actual, encoder)
+        if cls._is_primitive(expected):
+            diff = {"expected": expected, "actual": actual}
+        else:
+            diff = cls._compare_collections(expected, actual, encoder)
 
         if print_diff:
             cls.__print_diff(diff)
@@ -51,9 +54,23 @@ class SmallDiff:
             raise TypeError("Expected and actual data types must be the same")
 
     @classmethod
-    def _compare_collections(cls, expected: Union[Type, Dict, List], actual: Union[Type, Dict, List],
-                             encoder: Type[ModelEncoder]) -> dict:
-        if isinstance(expected, list):
+    def _is_primitive(cls, value) -> bool:
+        return isinstance(value, (bool, str, int, float, complex, bytes, bytearray, type(None)))
+
+    @classmethod
+    def _is_collection(cls, value) -> bool:
+        return isinstance(value, (list, tuple, set, frozenset, ))
+
+
+
+    @classmethod
+    def _compare_collections(
+            cls,
+            expected: Union[Type, Dict, List],
+            actual: Union[Type, Dict, List],
+            encoder: Type[ModelEncoder]
+    ) -> dict:
+        if cls._is_collection(expected):
             return cls.__compare_list(expected, actual, encoder)
         return cls.__compare_dict(expected, actual, encoder)
 
@@ -64,12 +81,6 @@ class SmallDiff:
             actual_list: Union[Type, List],
             encoder: Type[ModelEncoder] = None
     ) -> dict:
-        # if len(expected_list) != len(actual_list):
-        #     raise ValueError("unable to compare lists with unequal size")
-        # return {
-        #     i: cls.__compare_dict(expected, actual, encoder)
-        #     for i, (expected, actual) in enumerate(zip(expected_list, actual_list))
-        # }
         return cls.__list_diff(expected_list, actual_list, encoder=encoder)
 
     @classmethod
@@ -79,9 +90,11 @@ class SmallDiff:
             actual: Union[Type, Any],
             encoder: Type[ModelEncoder] = None
     ) -> dict:
-        expected_dict: dict = cls.__to_dict(expected, encoder)
-        actual_dict: dict = cls.__to_dict(actual, encoder)
-        return cls.__dict_diff(expected_dict, actual_dict)
+        return cls.__dict_diff(
+            expected=cls.__to_dict(expected, encoder),
+            actual=cls.__to_dict(actual, encoder),
+            encoder=encoder
+        )
 
     @classmethod
     def __to_dict(cls,

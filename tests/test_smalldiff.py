@@ -278,6 +278,11 @@ class TestSmallDiff(unittest.TestCase):
 
         assert not SmallDiff.is_equal(person_list_1, person_list_2)
 
+    def test_primitives(self):
+        expected_age = 30
+        actual_age = 20
+        assert not SmallDiff.is_equal(expected_age, actual_age)
+
 
 if __name__ == '__main__':
     unittest.main()
