@@ -64,12 +64,13 @@ class SmallDiff:
             actual_list: Union[Type, List],
             encoder: Type[ModelEncoder] = None
     ) -> dict:
-        if len(expected_list) != len(actual_list):
-            raise ValueError("unable to compare lists with unequal size")
-        return {
-            i: cls.__compare_dict(expected, actual, encoder)
-            for i, (expected, actual) in enumerate(zip(expected_list, actual_list))
-        }
+        # if len(expected_list) != len(actual_list):
+        #     raise ValueError("unable to compare lists with unequal size")
+        # return {
+        #     i: cls.__compare_dict(expected, actual, encoder)
+        #     for i, (expected, actual) in enumerate(zip(expected_list, actual_list))
+        # }
+        return cls.__list_diff(expected_list, actual_list, encoder=encoder)
 
     @classmethod
     def __compare_dict(
@@ -95,24 +96,41 @@ class SmallDiff:
         return json.loads(json.dumps(schema, cls=ModelEncoder, indent=4))
 
     @classmethod
-    def __dict_diff(cls, expected: dict, actual: dict, path="") -> dict:
+    def __dict_diff(cls, expected: dict, actual: dict, path="", encoder: Type[ModelEncoder] = None) -> dict:
         """
-        Recursively compares two dictionaries and returns a dictionary of their differences.
+        Compares two dictionaries recursively and returns a dictionary of their differences.
+
+        Args:
+        expected (dict): The list of expected values.
+        actual (dict): The list of actual values to compare against expected.
+        path (str): The current path in the object structure (used for nested objects).
+
+        Returns:
+        dict: A dictionary containing the differences between the lists.
         """
         diff = {}
         # First iterate the expected dictionary
         for key, val in expected.items():
-
             # 1. Check if the value of the key is a dictionary and if it exists in the actual dictionary
             # 2. If both conditions are true, recursively call the dict_diff function with the nested dictionary
             # 3. and update the diff dictionary with the returned values
             if isinstance(val, dict) and key in actual and isinstance(actual[key], dict):
-                nested_diff = cls.__dict_diff(expected=val, actual=actual[key], path=f"{path}.{key}" if path else key)
+                nested_diff = cls.__dict_diff(
+                    expected=val,
+                    actual=actual[key],
+                    path=f"{path}.{key}" if path else key,
+                    encoder=encoder
+                )
                 if nested_diff:
                     diff.update(nested_diff)
 
             elif isinstance(val, list) and key in actual and isinstance(actual[key], list):
-                list_diff = cls.__list_diff(expected=val, actual=actual[key], path=f"{path}.{key}" if path else key)
+                list_diff = cls.__list_diff(
+                    expected=val,
+                    actual=actual[key],
+                    path=f"{path}.{key}" if path else key,
+                    encoder=encoder
+                )
                 if list_diff:
                     diff.update(list_diff)
 
@@ -135,27 +153,32 @@ class SmallDiff:
         return diff
 
     @classmethod
-    def __list_diff(cls, expected: list, actual: list, path="") -> dict:
+    def __list_diff(cls, expected: list, actual: list, path="", encoder: Type[ModelEncoder] = None) -> dict:
         """
         Compares two lists and returns a dictionary of their differences.
         """
         diff = {}
         for i, (expected_val, actual_val) in enumerate(zip(expected, actual)):
-            # Check if the expected value in the list is a dictionary and if it exists in the actual list
-            # If both conditions are true, recursively call the dict_diff function with the nested dictionary
-            # and update the diff dictionary with the returned values
             if isinstance(expected_val, dict) and isinstance(actual_val, dict):
                 nested_diff = cls.__dict_diff(
-                    expected=expected_val, actual=actual_val, path=f"{path}.{i}" if path else i
+                    expected=expected_val, actual=actual_val, path=f"{path}.{i}" if path else str(i),
+                    encoder=encoder
                 )
                 if nested_diff:
                     diff.update(nested_diff)
+            elif isinstance(expected_val, list) and isinstance(actual_val, list):
+                nested_diff = cls.__list_diff(
+                    expected=expected_val, actual=actual_val, path=f"{path}.{i}" if path else str(i), encoder=encoder
+                )
+                if nested_diff:
+                    diff.update(nested_diff)
+            else:
+                # converting to dict because there is a print function that supports only dictionary for printing
+                expected_dict = cls.__to_dict(expected_val, encoder)
+                actual_dict = cls.__to_dict(actual_val, encoder)
+                if expected_dict != actual_dict:
+                    diff[f"{path}.{i}" if path else str(i)] = {"expected": expected_dict, "actual": actual_dict}
 
-            # Check if the expected value in the list does not match the actual value in the list
-            elif expected_val != actual_val:
-                diff[f"{path}.{i}" if path else i] = {"expected": expected_val, "actual": actual_val}
-
-        # Check list items inequality
         cls.__compare_remaining_list_items(expected, actual, diff, path)
 
         return diff
