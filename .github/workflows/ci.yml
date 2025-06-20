@@ -9,9 +9,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.9'
     - name: Install pipenv
@@ -20,9 +20,19 @@ jobs:
         pip install pipenv
     - name: Install dependencies
       run: |
-         pipenv install
          pipenv install --dev
     - name: Run Test
       run: |
         source "$(pipenv --venv 2>/dev/null)/bin/activate"
-        python -m pytest
+        python -m pytest \
+          --cov=smalldiff \
+          --cov-branch \
+          --cov-report=xml \
+          --cov-fail-under=80
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        files: ./coverage.xml
+        verbose: true
+        token: ${{ secrets.CODECOV_TOKEN }}
+        slug: dipanjal/smalldiff

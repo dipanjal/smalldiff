@@ -1,7 +1,10 @@
 #!/bin/bash
 
-rm -rf .venv
-mkdir -p .venv
 pyenv install -s # Redirecting stderr in null device
-pipenv install
+pipenv --clear
+if [ -d ".venv" ]; then
+    echo "Removing existing .venv"
+    pipenv --rm || rm -rf .venv  # Remove .venv manually if pipenv fails to remove it
+fi
+mkdir -p .venv
 pipenv install --dev
