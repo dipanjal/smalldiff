@@ -2,6 +2,8 @@
 
 SmallDiff is a Python library inspired by **_assertJ_** that provides a simple way to identify differences between two Python objects. It is designed to be easy to use and highly flexible, allowing you to compare objects of any type, including dictionaries, lists, and custom classes. SmallDiff uses a recursive algorithm to compare the values of the objects and return a map of the differences. With SmallDiff, you can quickly identify the changes between two objects and take appropriate action. Whether you're working on a small script or a large project, SmallDiff can help you write more robust and reliable code.
 
+[![codecov](https://codecov.io/gh/dipanjal/smalldiff/branch/main/graph/badge.svg)](https://codecov.io/gh/dipanjal/smalldiff)
+
 ## Installation
 
 First, ensure that you have Python 3.x installed on your system. You can check your version of Python by running:
