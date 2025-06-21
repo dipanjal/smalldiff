@@ -16,12 +16,12 @@ class ModelEncoder(JSONEncoder):
             if isinstance(obj, (set, frozenset)):
                 return list(obj)
             if isinstance(obj, object):
-                if hasattr(obj, '__dict__'):
-                    return obj.__dict__
                 if hasattr(obj, 'to_dict'):
                     return obj.to_dict()
+                if hasattr(obj, '__dict__'):
+                    return obj.__dict__
             return json.JSONEncoder.default(self, obj)
         except TypeError as e:
             msg = (f'{e}, provide a customer encoder by extending ModelEncoder '
                    f'or implement to_dict() method')
-            raise TypeError(msg)
+            raise TypeError(msg) from e
