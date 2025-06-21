@@ -1,0 +1,31 @@
+[build-system]
+requires = [
+    "setuptools>=65.5.0",
+    "wheel~=0.37.1"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smalldiff"
+description = "A python library to find diff between two objects"
+requires-python = ">=3.8"
+authors = [
+    {name = "Dipanjal Maitra", email = "dipanjalmaitra@gmail.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "pydantic~=1.10.7"
+]
+dynamic = ["version", "readme"]
+
+[project.urls]
+homepage = "https://github.com/dipanjal/smalldiff"
+
+[tool.setuptools.dynamic]
+version = {file = ".app-version"}
+readme = {file = "README.md"}
